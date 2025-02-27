@@ -75,13 +75,31 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Kecepatan Climb")]
     [SerializeField] float _ClimbSpeed;
     private PlayerStance _Stance;
+
+
+
+    [Header("Camera")]
+    [SerializeField]
+    [Tooltip("Posisi Camera")]
+    private Transform _cameraTransform;
+    [SerializeField]
+    [Tooltip("Mengatur Camera")]
+    private CameraManager _CameraManager;
+
     private void Awake()
     {
         _Stance = PlayerStance.Stand;
         _Rigidbody = GetComponent<Rigidbody>();
         _Speed = _WalkSpeed;
+        HideAndLockCursor();
     }
 
+
+    private void HideAndLockCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;   
+        Cursor.visible = false;
+    }
     private void Subscribe()
     {
         _InputActions.OnClimbInput += StartClimb;
@@ -89,9 +107,11 @@ public class PlayerMovement : MonoBehaviour
         _InputActions.OnSprintInput += Sprint;
         _InputActions.OnJumpInput += Jump;
         _InputActions.OnCanceClimbInput += CancelClimb;
+        _InputActions.OnChangePOV += _CameraManager.SwitchCamera;
     }
     private void UnSubscribe()
     {
+        _InputActions.OnChangePOV -= _CameraManager.SwitchCamera;
         _InputActions.OnClimbInput -= StartClimb;
         _InputActions.OnMoveInput -= Move;
         _InputActions.OnSprintInput -= Sprint;
@@ -103,19 +123,22 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_Stance == PlayerStance.Climb)
         {
+            _CameraManager.SetTPSFieldOfView(40);
             _Stance = PlayerStance.Stand;
             _Rigidbody.useGravity = true;
             transform.position -= transform.forward * 1;
+            _CameraManager.SetFpsClampedCamera(false, transform.eulerAngles);
         }
     }
     private void StartClimb()
     {
         if (Physics.Raycast(_ClimbDetector.transform.position, transform.forward, out RaycastHit hit, _ClimbCheckDistance, _ClimbLayer) && _IsGround && _Stance != PlayerStance.Climb && _IsGround) {
+            _CameraManager.SetTPSFieldOfView(70);
             Vector3 OffSet = (transform.forward * _ClimbOffset.z) + (Vector3.up * _ClimbOffset.y);
             transform.position = hit.point - OffSet;    
             _Stance = PlayerStance.Climb;
             _Rigidbody.useGravity = false ;
-
+            _CameraManager.SetFpsClampedCamera(true,transform.rotation.eulerAngles);
         } 
     }
 
@@ -156,23 +179,41 @@ public class PlayerMovement : MonoBehaviour
     private void Move(Vector2 AxisDirection)
     {
         Vector3 MovementDirection = Vector3.zero;
-        if (_Stance == PlayerStance.Stand)
+        if(_Stance == PlayerStance.Stand)
         {
-            if (AxisDirection.magnitude >= 0.1f)
+            switch (_CameraManager._CameraState)
             {
-                float rotasiAngle = Mathf.Atan2(AxisDirection.x, AxisDirection.y) * Mathf.Rad2Deg;
-                float SmoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotasiAngle, ref _RotationSmoothSpeed, _RotationSmoothTime);
-                transform.rotation = Quaternion.Euler(0f, SmoothAngle, 0f);
-                 MovementDirection = Quaternion.Euler(0f, rotasiAngle, 0f) * Vector3.forward;
-                _Rigidbody.AddForce(MovementDirection * Time.deltaTime * _Speed);
+                case CameraState.ThirdPerson:
+                    if (AxisDirection.magnitude >= 0.1f)
+                    {
+                        float rotasiAngle = Mathf.Atan2(AxisDirection.x, AxisDirection.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
+                        float SmoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotasiAngle, ref _RotationSmoothSpeed, _RotationSmoothTime);
+                        transform.rotation = Quaternion.Euler(0f, SmoothAngle, 0f);
+                        MovementDirection = Quaternion.Euler(0f, rotasiAngle, 0f) * Vector3.forward;
+                        _Rigidbody.AddForce(MovementDirection * Time.deltaTime * _Speed);
+                    }
+                    break;
+                case CameraState.FirstPerson:
+                    transform.rotation = Quaternion.Euler(0f,_cameraTransform.eulerAngles.y,0f);
+                    Vector3 verticalDirection = AxisDirection.y * transform.forward;
+                    Vector3 horizontalDirection = AxisDirection.x * transform.right;
+                    MovementDirection = verticalDirection + horizontalDirection;
+                    _Rigidbody.AddForce(MovementDirection * Time.deltaTime * _Speed);
+                    break;
+                default:
+                    break;
             }
-        }else if(_Stance == PlayerStance.Climb)
+        }
+        else if (_Stance == PlayerStance.Climb)
         {
             Vector3 Horizontal = AxisDirection.x * transform.right;
             Vector3 Vertikal = AxisDirection.y * transform.up;
             MovementDirection = Horizontal + Vertikal;
             _Rigidbody.AddForce(MovementDirection * Time.deltaTime * _ClimbSpeed);
+
         }
+
+
     }   
     private void CheckGrounded()
     {

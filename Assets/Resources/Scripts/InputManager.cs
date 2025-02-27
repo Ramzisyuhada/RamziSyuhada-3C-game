@@ -14,6 +14,7 @@ public class InputManager : MonoBehaviour
     public Action OnJumpInput;
     public Action OnClimbInput;
     public Action OnCanceClimbInput;
+    public Action OnChangePOV; 
     private void CheckMovementInput()
     {
         float Horizontal = Input.GetAxis("Horizontal");
@@ -60,7 +61,7 @@ public class InputManager : MonoBehaviour
     private void CheckChangePOVInput() 
     {
         bool pov = Input.GetKey(KeyCode.Q);
-        if (pov) Debug.Log("Mengganti POV");
+        if (pov) if (OnChangePOV != null) OnChangePOV(); 
     
     }
 
