@@ -1,4 +1,5 @@
 using Cinemachine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -22,8 +23,13 @@ public class CameraManager : MonoBehaviour
     [Tooltip("GameOneject TPSCamera Manager")]
 
     [SerializeField] CinemachineFreeLook _tpsCamera;
+
+    public Action OnChagePerspective;
+
     public void SetFpsClampedCamera(bool isClamped, Vector3 playerRotation)
     {
+
+
         CinemachinePOV pov = _fpsCamera.GetCinemachineComponent<CinemachinePOV>();
         if (isClamped)
 
@@ -41,17 +47,24 @@ public class CameraManager : MonoBehaviour
         }
 
     }
+    
 
     public void SwitchCamera()
     {
+
+
         if (CameraState.ThirdPerson == _CameraState)
         {
+            OnChagePerspective();
+
             _CameraState = CameraState.FirstPerson;
             _fpsCamera.gameObject.SetActive(true);
             _tpsCamera.gameObject.SetActive(false);
         }
         else
         {
+            OnChagePerspective();
+
             _CameraState = CameraState.ThirdPerson;
             _fpsCamera.gameObject.SetActive(false);
             _tpsCamera.gameObject.SetActive(true);

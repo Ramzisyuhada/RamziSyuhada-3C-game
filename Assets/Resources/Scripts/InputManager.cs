@@ -14,7 +14,26 @@ public class InputManager : MonoBehaviour
     public Action OnJumpInput;
     public Action OnClimbInput;
     public Action OnCanceClimbInput;
-    public Action OnChangePOV; 
+    public Action OnChangePOV;
+    public Action OnChangeCrouch;
+    public Action OnGlide;
+
+    public Action OnCancelGlide;
+
+    public Action OnPunchInput;
+    
+
+    
+    private void CheckGlide()
+    {
+        bool OnGldie = Input.GetKeyDown(KeyCode.G);
+        if (OnGldie) if (OnGlide != null) OnGlide();
+    }
+    private void CheckCancelGlide()
+    {
+        bool OnGldie = Input.GetKeyDown(KeyCode.C);
+        if (OnGldie) if (OnGlide != null) OnCancelGlide();
+    }
     private void CheckMovementInput()
     {
         float Horizontal = Input.GetAxis("Horizontal");
@@ -26,7 +45,7 @@ public class InputManager : MonoBehaviour
 
     private void CheckJumpInput()
     {
-        bool jump = Input.GetKey(KeyCode.Space);
+        bool jump = Input.GetKeyDown(KeyCode.Space);
 
 
         if (jump)
@@ -54,13 +73,15 @@ public class InputManager : MonoBehaviour
     }
     private void CheckSprintCrouchInput() 
     { 
-        bool crouch = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        if (crouch) Debug.Log("Jongkok");
+        bool crouch = Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl);
+        if (crouch) {
+            OnChangeCrouch();
+        } ;
     }
 
     private void CheckChangePOVInput() 
     {
-        bool pov = Input.GetKey(KeyCode.Q);
+        bool pov = Input.GetKeyDown(KeyCode.Q);
         if (pov) if (OnChangePOV != null) OnChangePOV(); 
     
     }
@@ -82,14 +103,15 @@ public class InputManager : MonoBehaviour
 
     private void CheckHitInput()
     {
-        bool hit = Input.GetKey(KeyCode.Mouse0);
-        if (hit) Debug.Log("Hit");
+        bool hit = Input.GetKeyDown(KeyCode.Mouse0);
+        if (hit) { 
+            OnPunchInput();
+        }
     }
 
     private void CheckMenuInput()
     {
         bool menu = Input.GetKey(KeyCode.Escape);
-        if (menu) Debug.Log("Main menu");
     }
     void Start()
     {
@@ -107,5 +129,7 @@ public class InputManager : MonoBehaviour
         CheckStopClimbInput();
         CheckHitInput();
         CheckMenuInput();
+        CheckGlide();
+        CheckCancelGlide();
     }
 }
