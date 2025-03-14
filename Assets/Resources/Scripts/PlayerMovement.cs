@@ -145,6 +145,10 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Layer")]
     private LayerMask _hitlayer;
 
+    [Header("Sound")]
+    
+    [Tooltip("Script Untuk Sound  Player")]
+    PlayerAudioManager _PlayerAudio;
 
 
     private Coroutine _resetCombo;
@@ -166,6 +170,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
+        _PlayerAudio = GetComponent<PlayerAudioManager>();
         _collider = GetComponent<CapsuleCollider>();
         _Stance = PlayerStance.Stand;
         _Rigidbody = GetComponent<Rigidbody>();
@@ -265,6 +270,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_Stance != PlayerStance.Glide && !_IsGround)
         {
+            _PlayerAudio.PlayGlideSfx();
+
             _CameraManager.SetFpsClampedCamera(true, transform.rotation.eulerAngles);
             _Animator.SetBool("IsGlide", true);
             _Stance = PlayerStance.Glide;
@@ -275,6 +282,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_Stance == PlayerStance.Glide)
         {
+            _PlayerAudio.StopGlideSfx();
+            _PlayerAudio.PlayLandingSfx();
             _CameraManager.SetFpsClampedCamera(false, transform.rotation.eulerAngles);
 
             _Animator.SetBool("IsGlide", false);
@@ -444,6 +453,7 @@ public class PlayerMovement : MonoBehaviour
 
         _IsGround = Physics.CheckSphere(_GroundDetector.position, _DetectorRadius, _GroundLayer);
         _Animator.SetBool("IsGround", _IsGround);
+       // if(_IsGround) _PlayerAudio.PlayLandingSfx();
     }
     private void Jump()
     {

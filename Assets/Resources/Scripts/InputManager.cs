@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Build;
 using UnityEngine;
 
 public class InputManager : MonoBehaviour
@@ -21,6 +20,10 @@ public class InputManager : MonoBehaviour
     public Action OnCancelGlide;
 
     public Action OnPunchInput;
+    public Action OnMainMenuInput;
+
+
+
     
 
     
@@ -112,6 +115,7 @@ public class InputManager : MonoBehaviour
     private void CheckMenuInput()
     {
         bool menu = Input.GetKey(KeyCode.Escape);
+        if (menu) if(OnMainMenuInput != null) OnMainMenuInput();
     }
     void Start()
     {
