@@ -28,7 +28,7 @@ public class MainMenuManager : MonoBehaviour
     }
     public void Play()
     {
-        SceneManager.LoadScene("Main");
+        SceneManager.LoadScene("Main Demo Scene");
     }
 
     public void Exit()
