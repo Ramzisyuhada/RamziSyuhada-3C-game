@@ -150,13 +150,25 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Script Untuk Sound  Player")]
     PlayerAudioManager _PlayerAudio;
 
-
+    [Header("Reset Position")]
+    [SerializeField]
+    private Transform _ResetPosition;
     private Coroutine _resetCombo;
 
     private bool _IsPunching;
     private int _combo = 0;
     private Vector3 RotationDegre = Vector3.zero;
 
+
+    
+    public void ResetPositionCheck()
+    {
+        if (_ResetPosition != null)
+        {
+            transform.position = _ResetPosition.position;
+            transform.rotation = _ResetPosition.rotation;
+        }
+    }
     private void Hit()
     {
         Collider[] hit = Physics.OverlapSphere(_hitDetector.position, _hitDetectorRadius, _hitlayer);
